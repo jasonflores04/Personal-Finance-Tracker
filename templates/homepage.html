@@ -1,0 +1,101 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<div class="container">
+    <h1 class="title has-text-centered">{{ user_info.username }}'s {{time_bound}} Overview: </h1>
+    <div class="columns">
+        <div class="column is-1"></div>
+        <div class="column is-6">
+            <div class="container">
+                 <div class="box">
+                     <div class="columns is-mobile">
+                         <div class="column">
+                             <h1 class="title has-text-left">Details</h1>
+                         </div>
+                         <div class="column has-text-right mb-6">
+                             <div class="field">
+                                <div class="control">
+                                    <div class="select is-dark">
+                                        <form class="form" action="{{ url_for('home_page') }}" method="get">
+                                            <select name="time">
+                                                <option hidden disabled selected value> Select a Period </option>
+                                                <option>Past Week</option>
+                                                <option>Past Month</option>
+                                                <option>Past 3 Months</option>
+                                                <option>Past 6 Months</option>
+                                                <option>Past Year</option>
+                                                <option>All Past</option>
+                                            </select>
+                                            <button class="button is-primary mt-3" type="submit"> Change Period</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                         </div>
+                     </div>
+                     <h2 class="subtitle has-text-light is-4">Balance: <strong>${{ '%.2f'|format(user_info.balance) }}</strong></h2>
+                     <h2 class="subtitle has-text-light is-4">Net Income: {% if net_income > 0 %}<strong class="has-text-success">${{ net_income }}</strong>{% elif net_income < 0 %}<strong class="has-text-danger">${{ net_income }}</strong>{% else %}<strong>${{ net_income }}</strong>{% endif %}</h2>
+                     <h2 class="subtitle has-text-light is-4">Income: {% if income > 0 %}<strong class="has-text-success">${{ income }}</strong>{% elif income < 0 %}<strong class="has-text-danger">Error: Negative Value</strong>{% else %}<strong>${{ income }}</strong>{% endif %}</h2>
+                     <h2 class="subtitle has-text-light is-4">Expenses: {% if expenses > 0 %}<strong class="has-text-danger">${{ expenses }}</strong>{% elif expenses < 0 %}<strong class="has-text-danger">Error: Negative Value</strong>{% else %}<strong>${{ expenses }}</strong>{% endif %}</h2>
+                 </div>
+                <div class="box">
+                    <h1 class="title has-text-left mb-3 ">Savings Goal: {{ user_info.savings_name }}</h1>
+                    <h2 class="subtitle has-text-light is-4">Savings: {{ savings_total }}</h2>
+                    <h2 class="subtitle has-text-light is-4">Goal: ${{ savings_goal }}</h2>
+                    <h2 class="subtitle has-text-light is-4">Completion: {{ s_percent }}% </h2>
+                    <progress class="progress {% if s_percent < 25 %}is-danger {% elif s_percent < 60 %}is-warning {% elif s_percent < 100 %}is-success {% else%}is-link {% endif%}" value="{{s_percent}}" max="100"></progress>
+                </div>
+                <div class="box mb-6">
+                    <h1 class="title has-text-left mb-3 ">Budgets:</h1>
+                    {% for category in budget %}
+                        <div class="columns is-mobile mt-2">
+                            <div class="column is-3 has-text-light has-text-centered has-text-weight-bold">{{ category.category }}</div>
+                            <div class="column has-text-light has-text-centered">
+                                <progress class="progress mb-2 {% if ((category.budget_amount - category.expense_amount) / category.budget_amount) < 0.25 %} is-danger{% elif ((category.budget_amount - category.expense_amount) / category.budget_amount) < 0.60 %} is-warning{% elif ((category.budget_amount - category.expense_amount) / category.budget_amount) < 1 %} is-success{% else %} is-link{% endif%}" value="{{ category.budget_amount - category.expense_amount }}" max="{{ category.budget_amount }}"></progress>
+                                {% if ((category.budget_amount - category.expense_amount) >= 0) %}
+                                    ${{ '%.2f'|format(category.budget_amount - category.expense_amount) }}/{{ '%.2f'|format(category.budget_amount) }} Remaining
+                                {% else %}
+                                    Exceeded Budget by: ${{ '%.2f'|format((category.budget_amount - category.expense_amount) * -1) }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="subtitle is-5">No Budgets Made Yet</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="column is-4">
+            <div class="container">
+                <div class="box">
+                    <h2 class="title is-4 has-text-centered">Chart:</h2>
+                    <div class="box p-0" style="
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    overflow: hidden;">
+                    <img src="{{ homepage_graph }}" style="width: 100%; height: 100%;">
+                </div>
+                </div>
+                <div class="box">
+                    <h2 class="title is-4">Income to Expenses Ratio:</h2>
+                    <h2 class="subtitle is-4 has-text-centered has-text-light mt-2">{{ inc_to_exp_inc }} : {{ inc_to_exp_exp }}</h2>
+                </div>
+                <div class="box">
+                    <h2 class="title is-4">Balance to Expenses Ratio:</h2>
+                    <h2 class="subtitle is-4 has-text-centered has-text-light mt-2">{{ bal_t_e_b }} : {{ bal_t_e_e }}</h2>
+                </div>
+                <div class="box">
+                    <h2 class="title is-4">Average Income Per Month:</h2>
+                    <h2 class="subtitle is-4 has-text-centered has-text-light mt-2"> {{ avg_inc }} </h2>
+                </div>
+                <div class="box mb-6">
+                    <h2 class="title is-4">Average Expenses Per Month:</h2>
+                    <h2 class="subtitle is-4 has-text-centered has-text-light mt-2"> {{ avg_exp }} </h2>
+                </div>
+            </div>
+        </div>
+        <div class="column is-1"></div>
+    </div>
+</div>
+{% endblock %}

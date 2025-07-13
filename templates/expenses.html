@@ -1,0 +1,372 @@
+{% extends "layout.html" %}
+{% block body %}
+    <h1 class="title is-3 has-text-centered">Expenses</h1>
+
+    <!--Flash Message-->
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="container is-max-desktop">
+                {% for message in messages %}
+                    {% if (message == "Please, enter a valid past date!") or (message == "Please, enter a valid future date!") %}
+                        <div class="notification is-danger has-text-centered" style="margin-bottom: 20px">
+                            {{ message }}
+                        </div>
+                    {% else %}
+                        <div class="notification is-success has-text-centered" style="margin-bottom: 20px">
+                            {{ message }}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!--Container-->
+    <div class="container">
+        <!--Columns Container-->
+        <div class="columns">
+            <!--Left Column-->
+            <div class="column is-one-quarter">
+                <h2 class="title is-5 has-text-centered">Add Expense</h2>
+                <!--Form-->
+                <div class="box" style="margin-bottom: 45px">
+                    <form action="{{ url_for('add_expense') }}" method="post" class="field">
+                        <label class="label">Date:</label>
+                        <div class="control">
+                            <input class="input" style="margin-bottom: 15px" type="date" name="date" max="{{ current_date }}">
+                        </div>
+                        <!--Dropdown Choose Category Menu-->
+                        <div class="select mb-2">
+                            <select name="categories" id="categories" class="select is-info">
+                                <option value="" selected="selected">Choose Category</option>
+                                {% for category in categories %}
+                                    <option value="{{ category }}">{{ category }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!--Other Inputs-->
+                        <label class="label">Input Category:</label>
+                        <div class="control mb-5">
+                            <input class="input" type="text" name="category" id="input-category" maxlength="11" required>
+                        </div>
+                        <label class="label">Amount:</label>
+                        <div class="control mb-5">
+                            <input class="input" type="number" step="0.01" min="0.01" max="1000000000" name="purchase_amount" required>
+                        </div>
+                        <label class="label">Description (Optional):</label>
+                            <div class="control mb-5">
+                                <textarea class="textarea" name="description" placeholder="Input Text" maxlength="37"></textarea>
+                            </div>
+                        <div class="control">
+                            <button type="submit" class="button is-primary">
+                                <span class="icon">
+                                    <i class="fas fa-plus"></i>
+                                </span>
+                                <span>Add</span>
+                            </button>
+                            <input type="hidden" name="id">
+                        </div>
+                    </form>
+                </div>
+
+                <h2 class="title is-5 has-text-left">Total Expenses by Categories</h2>
+                <!--Dropdown Menu for selecting category to show-->
+                <form action="{{ url_for('expenses') }}" method="get" id="choose-categories" class="field">
+                    <div class="select">
+                        <select name="categories_choose" id="choose-category" class="select is-info">
+                            <option value="">Categories</option>
+                            {% for category in categories %}
+                                <option value="{{ category }}" {% if category == chosen_category %}selected{% endif %}>{{ category }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </form>
+
+                <div class="box" style="overflow: scroll; max-height: 360px; margin-bottom: 20px">
+                    <!--Showing All or Chosen Category-->
+                    {% if chosen_category %}
+                        <div class="box">
+                            <h5 class="title is-5">
+                                {{ chosen_category }}: {{ chosen_total }}
+                            </h5>
+                        </div>
+                    {% else %}
+                        {% for each in each_amount %}
+                        <div class="box">
+                            <h5 class="title is-5">
+                                {{ each[0] }}: ${{ each[1] }}
+                            </h5>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Center Column -->
+            <div class="column is-half">
+                <!--Total Expenses-->
+                <div class="box">
+                    <h2 class="title is-5 has-text-centered">Total Expenses: ${{ total }}</h2>
+                </div>
+
+                <h5 class="title is-4 has-text-centered" style="margin-top: 40px">Recent Expenses</h5>
+                <div class="box" style="overflow: scroll; max-height: 580px">
+                    <!--Latest Expenses List-->
+                    {% for expense in expenses %}
+                        {% if request.args.get('edit_exp') == expense.id|string %}
+                            <div class="box" id="edit_box">
+                                <div class="columns">
+                                    <div class="column">
+                                        <form action="{{ url_for('edit_expense') }}" method="post" class="field">
+                                            <div class="columns">
+                                                <div class="column">
+                                                    <div class="columns">
+                                                        <div class="column">
+                                                            <input class="input" style="width: 157px" type="text" name="updated_category" maxlength="11" value="{{ expense.category }}" required>
+                                                        </div>
+
+                                                        <div class="column is-one-quarter" style="width: auto"></div>
+
+                                                        <div class="column is-narrow is-flex is-align-items-center" style="padding-right: 0px">$</div>
+
+                                                        <div class="column has-text-right is-two-quarters">
+                                                            <input class="input has-text-left" type="number" step="0.01" min="0.01" name="updated_amount" max="1000000000" value="{{ expense.amount }}" required>
+                                                            <input type="hidden" name="prev_expense" value="{{ expense.amount }}">
+                                                        </div>
+                                                    </div>
+
+                                                    <p class="pl-5 mb-5">
+                                                        <textarea class="textarea" name="updated_description" maxlength="37">{{ expense.description }}</textarea>
+                                                    </p>
+                                                    <p>
+                                                        <input class="input" style="width: auto" type="date" name="updated_date" value="{{ expense.date }}" max="{{ current_date }}" required>
+                                                    </p>
+                                                </div>
+
+                                                <!--Confirm Button-->
+                                                <div class="column is-narrow">
+                                                    <button class="button is-primary" type="submit">Confirm</button>
+                                                    <input type="hidden" name="edited_id" value="{{ expense.id }}">
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+
+                                    <!--Cancel Button-->
+                                    <div class="column is-narrow">
+                                        <form action="{{ url_for('expenses') }}" method="get" class="field is-narrow has-text-right">
+                                            <button class="button is-secondary" type="submit">Cancel</button>
+                                            <input type="hidden" name="cancel_edit">
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                        {% else %}
+                            <div class="box">
+                                <div class="columns">
+                                    <div class="column is-narrow">
+                                        <h4 class="title is-4">{{ expense.category }}</h4>
+                                    </div>
+                                    <div class="column has-text-right" style="padding-right: 20px">
+                                        ${{ expense.amount }}
+                                    </div>
+
+                                    <!--Edit Button-->
+                                    <div class="column is-narrow">
+                                        <form action="" method="get" class="field">
+                                            <button class="button is-warning is-outlined" type="submit">Edit</button>
+                                            <input type="hidden" name="edit_exp" value="{{ expense.id }}">
+                                        </form>
+                                    </div>
+
+                                    <!--Delete Button-->
+                                    <div class="column is-narrow">
+                                        <form action="{{ url_for('delete_expense') }}" method="post" class="field">
+                                            <button class="button is-danger is-outlined" type="submit">Delete</button>
+                                            <input type="hidden" name="expense_id" value="{{ expense.id }}">
+                                        </form>
+                                    </div>
+                                </div>
+                                <p class="pl-5 mb-5">{{ expense.description }}</p>
+                                <p>{{ expense.date }}</p>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+                <h5 class="title is-4 has-text-centered" style="margin-top: 40px">Upcoming Subscriptions</h5>
+                <!--Upcoming Subscriptions-->
+                <div class="box" style="overflow: scroll; max-height: 320px; margin-bottom: 30px">
+                    {% for subscription in subscriptions %}
+                        {% if request.args.get('edit_sub') == subscription.id|string %}
+                            <div class="box" id="edit_sub_box">
+                                <div class="columns">
+                                    <div class="column">
+                                        <form action="{{ url_for('edit_subscription') }}" method="post" class="field">
+                                            <div class="columns">
+                                                <div class="column">
+                                                    <div class="columns">
+                                                        <div class="column">
+                                                            <input class="input" style="width: 157px" type="text" name="updated_title" maxlength="11" value="{{ subscription.description }}" required>
+                                                        </div>
+
+                                                        <div class="column is-one-quarter" style="width: auto"></div>
+
+                                                        <div class="column is-narrow is-flex is-align-items-center" style="padding-right: 0px">$</div>
+
+                                                        <div class="column is-quarter">
+                                                            <input class="input has-text-left" type="number" max="1000000000" step="0.01" min="0.01" name="updated_sub_amount" value="{{ subscription.amount }}" required>
+                                                            <input type="hidden" name="prev_subscription" value="{{ subscription.amount }}">
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="columns">
+                                                        <div class="column"><input class="input" style="width: auto" type="date" name="updated_sub_date" value="{{ subscription.date }}" min="{{ current_date }}" required></div>
+                                                        <div class="column is-flex is-align-items-center">Months Left: <input class="input ml-1" type="number" name="updated_months" max="999" value="{{ subscription.months }}" min="1" step="1" style="max-width: 72px"></div>
+                                                    </div>
+                                                </div>
+
+                                                <!--Confirm Button-->
+                                                <div class="column is-narrow">
+                                                    <button class="button is-primary" type="submit">Confirm</button>
+                                                    <input type="hidden" name="edited_sub_id" value="{{ subscription.id }}">
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+
+                                    <!--Cancel Button-->
+                                    <div class="column is-narrow">
+                                        <form action="{{ url_for('expenses') }}" method="get" class="field is-narrow has-text-right">
+                                            <button class="button is-secondary" type="submit">Cancel</button>
+                                            <input type="hidden" name="cancel_sub_edit">
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                        {% else %}
+                            <div class="box">
+                                <div class="columns">
+                                    <div class="column is-narrow">
+                                        <h4 class="title is-4">{{ subscription.description }}</h4>
+                                    </div>
+                                    <div class="column has-text-right" style="padding-right: 20px">
+                                        ${{ subscription.amount }}
+                                    </div>
+
+                                    <!--Edit Button-->
+                                    <div class="column is-narrow">
+                                        <form action="" method="get" class="field">
+                                            <button class="button is-warning is-outlined" type="submit">Edit</button>
+                                            <input type="hidden" name="edit_sub" value="{{ subscription.id }}">
+                                        </form>
+                                    </div>
+
+                                    <!--Delete Button-->
+                                    <div class="column is-narrow">
+                                        <form action="{{ url_for('delete_subscription') }}" method="post" class="field">
+                                            <button class="button is-danger is-outlined" type="submit">Delete</button>
+                                            <input type="hidden" name="subscription_id" value="{{ subscription.id }}">
+                                        </form>
+                                    </div>
+                                </div>
+                                <div class="columns">
+                                    <div class="column pt-0">{{ subscription.date }}</div>
+                                    <div class="column pt-0">Months Left: {{ subscription.months }}</div>
+                                    <div class="column pt-0"></div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!--Right Column-->
+            <div class="column is-one-quarter">
+                <h2 class="title is-5 has-text-centered">Graph Total</h2>
+                <!--Total Expenses Graph-->
+                <div class="box p-0" style="
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    overflow: hidden;">
+                    <img src="{{ plot_url }}" style="width: 100%; height: 100%;">
+                </div>
+
+                <h2 class="title is-5 has-text-centered" style="margin-top: 30px">Category Graphs
+                    <span class="icon is-small has-tooltip" data-tooltip="If you see only ONE DOT, enter expenses for at least TWO MONTHS!">
+                        <i class="fas fa-question-circle"></i>
+                    </span>
+                </h2>
+                <!--Shows Graphs for Each Category Buttons-->
+                {% if check %}
+                    <div class="box p-0" style="
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        overflow: hidden;">
+                        <img src="{{ months_graph_url }}" style="width: 100%; height: 100%;">
+                    </div>
+                    <form action="{{ url_for('expenses') }}" class="field" method="get">
+                        <button class="button is-secondary" type="submit">
+                            Back
+                        </button>
+                        <input type="hidden" name="back" value=0>
+                    </form>
+                {% else %}
+                    <!--Buttons to show specific category graph-->
+                    <div class="box" style="overflow: scroll; max-height: 270px; margin-bottom: 30px">
+                        {% for each in each_amount %}
+                            <form action="{{ url_for('expenses') }}" method="get" class="field">
+                                <button class="button is-secondary mb-5" type="submit">
+                                    Show {{ each[0] }} Graph
+                                </button>
+                                <input type="hidden" name="show_graph" value="{{ each[0] }}">
+                            </form>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <h2 class="title is-5 has-text-centered">Add Subscription</h2>
+                <!--Subscription Form-->
+                <div class="box" style="margin-bottom: 50px">
+                    <form action="{{ url_for('add_subscription') }}" method="post" class="field">
+                        <label class="label">Start Date:</label>
+                        <div class="control">
+                            <input class="input" style="margin-bottom: 15px" type="date" name="sub_date" min="{{ current_date }}">
+                        </div>
+
+                        <label class="label">Longevity:</label>
+                        <div class="control">
+                            <input class="input" style="margin-bottom: 15px" type="number" max="999" min="1" step="1" name="months" placeholder="In Months">
+                        </div>
+
+                        <label class="label">Title:</label>
+                        <div class="control mb-3">
+                            <input class="input" type="text" maxlength="11" name="sub_name" required>
+                        </div>
+
+                        <label class="label">Amount:</label>
+                        <div class="control mb-5">
+                            <input class="input" type="number" step="0.01" max="1000000000" min="0" name="sub_amount" required>
+                        </div>
+                        <div class="control">
+                            <button type="submit" class="button is-primary">
+                                <span class="icon">
+                                    <i class="fas fa-plus"></i>
+                                </span>
+                                <span>Add</span>
+                            </button>
+                            <input type="hidden" name="id">
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Connect JS File-->
+    <script src="../static/scripts/expenses.js"></script>
+{% endblock %}

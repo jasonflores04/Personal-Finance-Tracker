@@ -1,0 +1,165 @@
+{% extends "layout.html" %}
+{% block body %}
+<div class="container" xmlns="http://www.w3.org/1999/html">
+        <div class="box">
+            <div class="columns is-centered">
+                <h1 class="title">Income</h1>
+            </div>
+        </div>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="notification is-success has-text-centered">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <div class="columns mb-6">
+            <div class="column is-half">
+                <form action="{{ url_for('add_income') }}" method="post" class="box">
+                    <div class="field">
+                        <label class="label">Amount</label>
+                        <div class="control">
+                            <input class="input" type="number" name="amount" min="0" step="0.01" required>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label">Category</label>
+                        <div class="control">
+                            <input class="input" type="text" name="category" maxlength="15" required>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label">Description</label>
+                        <div class="control">
+                            <input class="input" type="text" name="description" maxlength="15">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label">Date</label>
+                        <div class="control">
+                            <input class="input" type="date" name="date" placeholder="mm/dd/yyyy">
+                        </div>
+                    </div>
+                    <div class="control">
+                        <button class="button is-primary" type="submit">Add Income</button>
+                    </div>
+                </form>
+                <form action="{{ url_for('show_income') }}" method="get" class="box">
+                    <div class="field">
+                        <div class="control">
+                            <div class="select">
+                                <select name="category" required>
+                                    <option disabled selected value="">Category</option>
+                                    {% for category in categories %}
+                                        <option value="{{ category }}">{{ category }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="control">
+                        <button class="button is-primary" type="submit">Show selected category</button>
+                    </div>
+                    <div class="control" style="margin-top: 10px;">
+                        <a href="{{ url_for('show_income') }}" class="button is-info" type="submit">See all categories</a>
+                    </div>
+                </form>
+            </div>
+            <div class="column is-half">
+                <div class="box">
+                    <div class="columns is-centered">
+                        <h1 class="subtitle">Your Income Records</h1>
+                    </div>
+                    <div class="columns is-centered">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Amount</th>
+                                    <th>Category</th>
+                                    <th>Description</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in entries %}
+                                    <tr>
+                                        <td>{{ record.amount }}</td>
+                                        <td>{{ record.category}}</td>
+                                        <td>{{ record.description }}</td>
+                                        <td>{{ record.date }}</td>
+                                        <td>
+                                            <div class="column">
+                                                <div class="field is-grouped is-grouped-centered">
+                                                    <form action="{{ url_for('show_income') }}" method="get">
+                                                        <input name="edit_id" type="hidden" value="{{ record.id }}">
+                                                        <button class="button is-warning is-outlined" type="submit">Edit</button>
+                                                    </form>
+                                                    <form action ="{{ url_for('delete_income') }}" method="POST">
+                                                        <input name="id" type="hidden" value = "{{ record.id }}">
+                                                        <button class="button is-danger is-outlined" type="submit">Delete</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% if request.args.get('edit_id') == record.id|string %}
+                                        <tr>
+                                            <td colspan="6">
+                                                <form action="{{ url_for('edit_income') }}" method="post" class="box">
+                                                    <input name="id" type="hidden" value="{{ record.id }}">
+                                                    <div class="field">
+                                                        <label class="label">Amount</label>
+                                                        <div class="control">
+                                                            <input class="input" type="number" name="amount" min="0" step="0.01" value="{{ record.amount }}" required>
+                                                        </div>
+                                                    </div>
+                                                    <div class="field">
+                                                        <label class="label">Category</label>
+                                                        <div class="control">
+                                                            <input class="input" type="text" name="category" value="{{ record.category }}" maxlength="15" required>
+                                                        </div>
+                                                    </div>
+                                                    <div class="field">
+                                                        <label class="label">Description</label>
+                                                        <div class="control">
+                                                            <input class="input" type="text" name="description" value="{{ record.description }}" maxlength="15">
+                                                        </div>
+                                                    </div>
+                                                    <div class="field">
+                                                        <label class="label">Date</label>
+                                                        <div class="control">
+                                                            <input class="input" type="date" name="date" value="{{ record.date }}">
+                                                        </div>
+                                                    </div>
+                                                    <div class="field is-grouped">
+                                                        <div class="control">
+                                                            <button class="button is-primary" type="submit">Update</button>
+                                                        </div>
+                                                        <div class="control">
+                                                            <a href="{{ url_for('show_income') }}" class="button is-secondary">Cancel</a>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="box">
+                    <h4 class="title is-4">Total Income: <span class="subtitle">{{ total_income }} $</span> </h4>
+                    <h4 class="title is-4">Income by category:</h4>
+                        {% for category in income_per_category %}
+                            <li class="title is-6">
+                                {{ category.category }}: <span class="subtitle is-6"> {{ category.total_per_category }} $</span>
+                            </li>
+                        {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

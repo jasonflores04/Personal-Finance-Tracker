@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% block body %}
+    {% for message in get_flashed_messages() %}
+        <div class="notification is-danger">{{ message }}</div>
+    {% endfor %}
+    <section class="section">
+      <div class="columns">
+          <div class="column">
+          </div>
+          <div class="column">
+            <form method="post" action="{{ url_for('change_username_post') }}">
+                <input class="input mb-3" type="text" name="username" placeholder="Username">
+                <input class="input mb-3" type="text" name="password" placeholder="Password">
+                <input class="input mb-3" type="text" name="new_username" placeholder="New username">
+                <input class="button is-primary" type="submit">
+            </form>
+          </div>
+        <div class="column">
+        </div>
+      </div>
+    </section>
+{% endblock %}

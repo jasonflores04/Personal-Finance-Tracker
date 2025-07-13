@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Trackr++</title>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+
+              // Get all "navbar-burger" elements
+              const $navbarBurgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'), 0);
+
+              // Add a click event on each of them
+              $navbarBurgers.forEach( el => {
+                el.addEventListener('click', () => {
+
+                  // Get the target from the "data-target" attribute
+                  const target = el.dataset.target;
+                  const $target = document.getElementById(target);
+
+                  // Toggle the "is-active" class on both the "navbar-burger" and the "navbar-menu"
+                  el.classList.toggle('is-active');
+                  $target.classList.toggle('is-active');
+
+                });
+              });
+
+            });
+        </script>
+        <script>
+            // Thanks Continue
+            document.addEventListener('DOMContentLoaded', function () {
+                const searchInput = document.getElementById('user-search');
+                const dropdown = document.querySelector('.dropdown');
+                const dropdownMenu = document.getElementById('dropdown-menu');
+                const dropdownItems = document.querySelectorAll('.dropdown-item');
+                const maskInput = document.getElementById('mask-input');
+                const form = document.querySelector('form');
+                const errorMessage = document.getElementById('error-message');
+
+                searchInput.addEventListener('focus', function () {
+                    dropdown.classList.add('is-active');
+                });
+
+                searchInput.addEventListener('blur', function () {
+                    setTimeout(() => {
+                        dropdown.classList.remove('is-active');
+                    }, 200); // Delay to allow click on dropdown item
+                });
+
+                searchInput.addEventListener('input', function () {
+                    const searchTerm = searchInput.value.toLowerCase();
+
+                    dropdownItems.forEach(item => {
+                        const username = item.getAttribute('data-username').toLowerCase();
+                        if (username.includes(searchTerm)) {
+                            item.style.display = 'block';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                });
+
+                // Handle item selection
+                dropdownItems.forEach(item => {
+                    item.addEventListener('click', function (event) {
+                        event.preventDefault();
+                        const selectedUsername = item.getAttribute('data-username');
+                        searchInput.value = selectedUsername;
+                        maskInput.value = selectedUsername;
+                        dropdown.classList.remove('is-active');
+                        form.submit(); // Submit the form
+                    });
+                });
+
+                // Handle Enter key press
+                searchInput.addEventListener('keypress', function (event) {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        const typedUsername = searchInput.value;
+                        if (isValidUsername(typedUsername)) {
+                            maskInput.value = typedUsername;
+                            form.submit(); // Submit the form
+                        } else {
+                            errorMessage.style.display = 'block';
+                        }
+                    }
+                });
+
+                // Function to validate username
+                function isValidUsername(username) {
+                    return Array.from(dropdownItems).some(item => item.getAttribute('data-username') === username);
+                }
+
+                // Hide error message when input changes
+                searchInput.addEventListener('input', function () {
+                    errorMessage.style.display = 'none';
+                });
+            });
+        </script>
+        <style>
+            #edit_box {box-shadow: 0 0 10px 5px rgba(0,228,255,0.8);}
+            #edit_box:hover {box-shadow: 0 0 15px 5px rgba(0, 228, 255, 1);}
+            #edit_sub_box {box-shadow: 0 0 10px 5px rgba(4, 209, 178, 0.8);}
+            #edit_sub_box:hover {box-shadow: 0 0 15px 5px rgba(4, 209, 178, 1);}
+
+            /* Tooltip Customization */
+            .has-tooltip {
+                position: relative;
+                cursor: pointer;
+            }
+
+            .has-tooltip::after {
+                content: attr(data-tooltip);
+                position: absolute;
+                bottom: 100%;
+                left: 50%;
+                transform: translateX(-50%);
+                background-color: #14161a;
+                color: #ffffff;
+                border: 1px solid #ffffff;
+                padding: 5px 10px;
+                border-radius: 4px;
+                font-size: 14px;
+                white-space: nowrap;
+                opacity: 0;
+                transition: opacity 0.3s ease, transform 0.3s ease;
+            }
+
+            .has-tooltip:hover::after {
+              opacity: 1;
+              transform: translateX(-50%) translateY(-10px);
+            }
+        </style>
+    </head>
+    <body>
+        <div>
+            <div class="navbar">
+                <div class="navbar-brand">
+                    <a class="navbar-item" href="{{ url_for('home_page') }}">
+                        <img src="/static/Trackr_large.svg" alt="Trackr++" width="120">
+                    </a>
+                    <a class="navbar-burger has-text-light" data-target="navMenu" aria-label="menu" aria-expanded="false">
+                      <span aria-hidden="true"></span>
+                      <span aria-hidden="true"></span>
+                      <span aria-hidden="true"></span>
+                      <span aria-hidden="true"></span>
+                    </a>
+                </div>
+                <div class="navbar-menu" id="navMenu">
+                    <div class="navbar-start">
+                        <a class="navbar-item has-text-light ml-2" href="/">Home</a>
+                        <a class="navbar-item has-text-light ml-2" href="/income">Income</a>
+                        <a class="navbar-item has-text-light ml-2" href="/expenses">Expenses</a>
+                        <a class="navbar-item has-text-light ml-2" href="/savings">Savings</a>
+                        <a class="navbar-item has-text-light ml-2" href="/budget">Budget</a>
+                        <a class="navbar-item has-text-light ml-2" href="/reports">Reports</a>
+                        <a class="navbar-item has-text-light ml-2" href="/settings">Settings</a>
+                    </div>
+                    <div class="navbar-end">
+                        <div class="navbar-item">
+                            <div id="error-message" class="notification is-danger py-2 px-3 " style="display: none;">
+                                Invalid username
+                            </div>
+                        </div>
+                        <div class="navbar-item ml-1 mr-6 px-1">
+                            {% if is_admin.admin == 1 %}
+                                <form class="form" action="{{ url_for('admin_mask') }}" method="get">
+                                    <div class="field is-grouped mr-6">
+                                        <div class="control">
+                                            <div class="dropdown">
+                                                <div class="dropdown-trigger">
+                                                    <input class="input is-dark" type="text" placeholder="Search users..." id="user-search">
+                                                </div>
+                                                <div class="dropdown-menu" id="dropdown-menu" role="menu">
+                                                    <div class="dropdown-content">
+                                                        {% for a_username in user_list %}
+                                                            <a href="#" class="dropdown-item" data-username="{{ a_username.username }}">{{ a_username.username }}</a>
+                                                        {% endfor %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <input type="hidden" name="mask" id="mask-input">
+                                    </div>
+                                </form>
+                            {% endif %}
+                            <button class="button is-outlined is-danger m-1 pt-1 px-2" type='reset' onclick="location.href='{{ url_for('logout') }}'">Logout</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% block body %} {% endblock %}
+            <div class="footer has-background-black-ter has-text-centered">
+                <div class="container">
+                    <div class="columns">
+                        <div class="column is-4">
+                            <img class="ml-4" src="/static/Trackr_large.svg" alt="Trackr++">
+                            <h1 class="is-size-5">presented by <strong><a href="https://www.iwu.edu/"> Big Corporation</a></strong> </h1>
+                            <h2 class="mt-4"> <strong class="has-text-info">Developed</strong> by <strong>Project-Finance Software</strong></h2>
+                        </div>
+                        <div class="column is-8">
+                            <div class="columns is-mobile">
+                                <div class="column">
+                                    <div class="content">
+                                        <h4 class="mb-2">Company:</h4>
+                                        <ul style="list-style-type: none" class="ml-0 mt-0">
+                                            <li><a href="https://www.iwu.edu/">About</a> </li>
+                                            <li><a href="https://www.iwu.edu/career-center/">Careers</a> </li>
+                                            <li><a href="https://youtu.be/miVoe7U6Lx4?si=L2GaCsl-vgTt4TdS&t=29">Legal</a> </li>
+                                            <li><a href="https://youtu.be/dQw4w9WgXcQ?si=EvPkOACqoepXBwyZ">Terms of Service</a> </li>
+                                            <li><a href="https://youtu.be/dQw4w9WgXcQ?si=EvPkOACqoepXBwyZ">Contact Us</a> </li>
+                                            <li><a href="https://youtu.be/cwCtM6D4GOc?si=4uXjyxF4Tp-B074r">Help</a> </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="column">
+                                    <div class="content">
+                                        <h4 class="mb-2">Socials:</h4>
+                                        <ul style="list-style-type: none" class="ml-0 mt-0 mb-2">
+                                            <li><a href="https://www.instagram.com/">Instagram</a> </li>
+                                            <li><a href="https://x.com/home?lang=en">Twitter</a> </li>
+                                            <li><a href="https://youtu.be/dQw4w9WgXcQ?si=EvPkOACqoepXBwyZ">YouTube</a> </li>
+                                            <li><a href="https://discord.com/">Discord</a> </li>
+                                        </ul>
+                                        <h4 class="mb-2 mt-1">Open Source:</h4>
+                                        <ul style="list-style-type: none" class="ml-0 mt-0">
+                                            <li><a href="https://github.com/IWU-CS253/project-finance">Repository</a> </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

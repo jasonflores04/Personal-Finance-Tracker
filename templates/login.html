@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+{% block body %}
+<head>
+    <style>
+        .navbar {visibility: hidden}
+        .footer {visibility: hidden}
+    </style>
+</head>
+<section class="section">
+    <div class="columns">
+        <div class="column">
+        </div>
+        <div class="column">
+            <img class="ml-3" src="/static/Trackr_large.svg" alt="Trackr++">
+            <h1 class="title"> Login: </h1>
+            {% for message in get_flashed_messages() %}
+            <div class="notification is-danger">{{ message }}</div>
+            {% endfor %}
+<!--                   <img src="../imgs/img.jpg" width="1024" alt="logo">-->
+            <form method="post" action="{{ url_for('login_account') }}">
+                <input class="input mb-3" type="text" placeholder="username" name="username">
+                <input class="input mb-3" type="text" placeholder="password" name="password">
+                <input type="submit" value="Login" class="button is-primary mr-2">
+                <button type="reset" class="button is-secondary" onclick="location.href='{{ url_for('register_page') }}'">Register Account</button>
+            </form>
+        </div>
+        <div class="column">
+        </div>
+    </div>
+</section>
+{% endblock %}

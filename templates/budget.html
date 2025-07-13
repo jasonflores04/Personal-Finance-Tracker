@@ -1,0 +1,93 @@
+{% extends "layout.html" %}
+{% block body %}
+<div class="container">
+    <h1 class="title has-text-centered"> Budgets</h1>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="notification {% if message == 'Category already exists!' %} is-danger {% else %} is-success {% endif %} has-text-centered">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+        <div class="columns">
+            <div class="column is-half">
+                <div class="container">
+                    <h1 class="title is-4 has-text-centered my-3">Budgeted Expenses For the Month:</h1>
+                </div>
+                <div class="container mb-6">
+                    <ul class="budget">
+                    {% for category in budget %}
+                        <li>
+                            <div class="box my-2">
+                                <div class="columns is-mobile">
+                                    <div class="column is-2 has-text-light has-text-centered has-text-weight-bold">{{ category.category }}</div>
+                                    <div class="column has-text-light has-text-centered">
+                                        <progress class="progress mb-2 {% if ((category.budget_amount - category.expense_amount) / category.budget_amount) < 0.25 %} is-danger{% elif ((category.budget_amount - category.expense_amount) / category.budget_amount) < 0.60 %} is-warning{% elif ((category.budget_amount - category.expense_amount) / category.budget_amount) < 1 %} is-success{% else %} is-link{% endif%}" value="{{ category.budget_amount - category.expense_amount }}" max="{{ category.budget_amount }}"></progress>
+                                        {% if ((category.budget_amount - category.expense_amount) >= 0) %}
+                                            ${{ '%.2f'|format(category.budget_amount - category.expense_amount) }}/{{ '%.2f'|format(category.budget_amount) }} Remaining
+                                        {% else %}
+                                            Exceeded Budget by: ${{ '%.2f'|format((category.budget_amount - category.expense_amount) * -1) }}
+                                        {% endif %}
+                                    </div>
+                                    <div class="column is-2">
+                                        <form action="{{ url_for('delete_budget') }}" method="post" class="field">
+                                            <button class="button is-danger is-outlined" type="submit">Delete</button>
+                                            <input type="hidden" name="id" value="{{ category.user_id }}">
+                                            <input type="hidden" name="category" value="{{ category.category }}">
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    {% else %}
+                        <li><h2 class="title is-5 has-text-info has-text-centered">No Budgets so far!</h2></li>
+                    {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            <div class="column is-half">
+                <div class="container">
+                    <form action="{{ url_for('add_budget') }}" method="post" class="box">
+                    <div class="field">
+                        <label class="label">Add Expense:</label>
+                        <div class="control">
+                            <div class="select mb-3">
+                                <select name="category" required>
+                                    <option hidden disabled selected value> Choose a Category </option>
+                                    {% for category in expenses_not_in_budget %}
+                                        <option>{{category.category}}</option>
+                                    {% else %}
+                                        <option disabled>All Categories Budgeted</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="control">
+                            <input class="input" name="amount" type="text" placeholder="Amount($)" pattern="^\d+(\.\d{1,2})?$" title="Please enter a valid positive amount (e.g., 100 or 100.50)" required>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="control">
+                            <button class="button is-primary">Add</button>
+                        </div>
+                    </div>
+                    </form>
+                </div>
+                <div class="container my-6">
+                    <div class="box has-text-centered">
+                        <div class="expenses_not_in_budget">
+                            <h1 class="title is-5">Expenses that aren't in your budget: </h1>
+                            {% for category in expenses_not_in_budget %}
+                                <h2 class="subtitle is-4 has-text-info has-text-weight-bold my-4 ml-5">{{ category.category }}</h2>
+                            {% else %}
+                                <h2 class="title is-4 has-text-info has-text-weight-bold my-4 ml-5">All Expenses Budgeted!</h2>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+</div>
+{% endblock %}

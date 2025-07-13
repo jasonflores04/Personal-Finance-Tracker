@@ -1,0 +1,95 @@
+{% extends "layout.html" %}
+{% block body %}
+    <div class="box">
+        <div class="columns is-centered">
+            <h1 class="title">Reports</h1>
+        </div>
+    </div>
+    <div class="columns">
+        <div class="column is-one-quarter">
+            <form method="get" action="{{ url_for('reports') }}" style="margin-left: 2rem">
+                <h2 class="subtitle has-text-light is-4">Select Month:</h2>
+                <input type="month" id="month" name="month" value="{{ selected_month }}">
+                <button type="submit" class="button is-info" style="margin-bottom: 2rem">Generate Report</button>
+            </form>
+            <form method="get" action="{{ url_for('download_pdf') }}" target="_blank" style="margin-left: 2rem; margin-bottom: 2rem">
+                <input type="hidden" name="month" value="{{ selected_month }}">
+                <button type="submit" class="button is-primary">Download Monthly Report</button>
+            </form>
+        </div>
+        <div class="column">
+            <form method="get" action="{{ url_for('reports') }}" style="margin-left: 2rem">
+                <h2 class="subtitle has-text-light is-4">Select Year:</h2>
+                <input type="number" id="year" name="year" value="{{ selected_year }}" min="2000" max="2100">
+                <button type="submit" class="button is-info" style="margin-bottom: 2rem">Generate Report</button>
+            </form>
+            <form method="get" action="{{ url_for('download_pdf') }}" target="_blank" style="margin-left: 2rem; margin-bottom: 2rem">
+                <input type="hidden" name="year" value="{{ selected_year }}">
+                <button type="submit" class="button is-primary">Download Yearly Report</button>
+            </form>
+        </div>
+    </div>
+    <div class="columns mb-6">
+        <div class="box" style="margin-right: 5rem; margin-left: 2rem">
+            <div class="column">
+                <h2 class="subtitle has-text-light is-4">Net Income: {{ net_income }}</h2>
+                <h2 class="subtitle has-text-light is-4">Income: <strong class="has-text-success">{{ income }}</strong></h2>
+                <h2 class="subtitle has-text-light is-4">Expenses: <strong class="has-text-danger">{{ expenses }}</strong></h2>
+            </div>
+        </div>
+        <div class="box" style="margin-right: 2rem">
+            <div class="column">
+                <div class="columns is-centered">
+                    <h1 class="subtitle">Income</h1>
+                </div>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Amount</th>
+                            <th>Category</th>
+                            <th>Description</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in report_data if record['type'] == 'Income' %}
+                        <tr>
+                            <td>${{ record['amount'] }}</td>
+                            <td>{{ record['category'] }}</td>
+                            <td>{{ record['description'] }}</td>
+                            <td>{{ record['date'] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="box" style="margin-left: 2rem">
+            <div class="column">
+                <div class="columns is-centered">
+                    <h1 class="subtitle">Expenses</h1>
+                </div>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Amount</th>
+                            <th>Category</th>
+                            <th>Description</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in report_data if record['type'] == 'Expenses' %}
+                        <tr>
+                            <td>${{ record['amount'] }}</td>
+                            <td>{{ record['category'] }}</td>
+                            <td>{{ record['description'] }}</td>
+                            <td>{{ record['date'] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

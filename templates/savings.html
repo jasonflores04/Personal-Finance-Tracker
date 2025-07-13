@@ -1,0 +1,112 @@
+{% extends "layout.html" %}
+{% block body %}
+    <div class="container">
+        <h1 class="title has-text-centered">Savings</h1>
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="notification is-success has-text-centered">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        {% endwith %}
+        <div class="columns">
+            <div class="column is-half">
+                <div class="container mb-6">
+                    {% if savings_goal_exist %}
+                    <div class="columns">
+                        <div class="column is-half">
+                            <form action="{{ url_for('add_savings') }}" method="post" class="box">
+                            <div class="field">
+                                <label class="label">Add to Savings:</label>
+                                <div class="control">
+                                    <input class="input" name="amount_to_add" type="text" placeholder="Amount($)" pattern="^\d+(\.\d{1,2})?$" title="Please enter a valid positive amount (e.g., 100 or 100.50)" required>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <div class="control">
+                                    <button class="button is-primary">Add</button>
+                                </div>
+                            </div>
+                            </form>
+                        </div>
+                        <div class="column is-half">
+                            <form action="{{ url_for('subtract_savings') }}" method="post" class="box">
+                            <div class="field">
+                                <label class="label">Subtract From Savings:</label>
+                                <div class="control">
+                                    <input class="input" name="subtract_amount" type="text" placeholder="Amount($)" pattern="^\d+(\.\d{1,2})?$" title="Please enter a valid positive amount (e.g., 100 or 100.50)" required>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <div class="control">
+                                    <button class="button is-secondary">Subtract</button>
+                                </div>
+                            </div>
+                            </form>
+                        </div>
+                    </div>
+                    <form action="{{ url_for('edit_savings') }}" method="post" class="box">
+                    <div class="field">
+                        <label class="label">Edit Savings Goal:</label>
+                        <div class="control">
+                            <input class="input mb-3" name="new_savings_goal" type="text" placeholder="Amount($)" pattern="^\d+(\.\d{1,2})?$" title="Please enter a valid positive amount (e.g., 100 or 100.50)" required>
+                        </div>
+                        <div class="control">
+                            <input class="input" name="new_savings_name" type="text" placeholder="Name" maxlength="21" required>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="control">
+                            <button class="button is-warning is-outlined">Edit</button>
+                        </div>
+                    </div>
+                    </form>
+
+
+                    {% else %}
+                        <form action="{{ url_for('add_savings') }}" method="post" class="box">
+                    <div class="field">
+                        <label class="label">Create Savings Goal:</label>
+                        <div class="control">
+                            <input class="input mb-3" name="savings_goal" type="text" placeholder="Amount($)" pattern="^\d+(\.\d{1,2})?$" title="Please enter a valid positive amount (e.g., 100 or 100.50)" required>
+                        </div>
+                        <div class="control">
+                            <input class="input" name="savings_name" type="text" placeholder="Name" maxlength="21" required>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="control">
+                            <button class="button is-primary">Create</button>
+                        </div>
+                    </div>
+                        </form>
+                    {% endif %}
+
+                </div>
+            </div>
+            <div class="column is-half">
+                <div class="box mb-6">
+                    <div class="savings_goal_display">
+                        {% if savings_goal_exist %}
+                        <div>
+                            <h1 class="title mb-4">Savings Goal: {{ savings_name }}</h1>
+                        </div>
+                        <progress class="progress {% if s_percent < 25 %}is-danger {% elif s_percent < 60 %}is-warning {% elif s_percent < 100 %}is-success {% else%}is-link {% endif%}" value="{{s_percent}}" max="100"></progress>
+                        <div class="total_savings mt-4">
+                            <div class="subtitle is-4"><strong>Saved: {{ total_savings }} / {{ savings_goal_display }}</strong></div>
+                        </div>
+                        <h2 class="subtitle is-5 mt-4">You are <strong>{{ percent_saved }}%</strong> of the way to your goal!</h2>
+                        <form action="{{ url_for('delete_savings') }}" method="post" class="field">
+                            <button class="button is-danger is-outlined" type="submit">Delete Goal</button>
+                        </form>
+                        {% else %}
+                        <div class="has-text-light"> You don't have a savings goal.</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
